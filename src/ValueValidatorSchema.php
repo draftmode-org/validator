@@ -3,30 +3,33 @@
 namespace Terrazza\Component\Validator;
 
 class ValueValidatorSchema {
-    private string $name;
-    private bool $array=false;
-    private bool $builtIn=false;
-    private bool $optional=false;
-    private ?string $type=null;
-    private ?string $declaringClass=null;
+    public string $name;
+    //public bool $array=false;
+    //public bool $builtIn=false;
+    public bool $optional=true;
+    public ?string $type=null;
+    /**
+     * @var ValueValidatorSchema[]|null
+     */
+    public ?array $childSchemas=null;
 
-    private ?string $patterns=null;
-    private ?string $format=null;
-    private ?int $minLength=null;
-    private ?int $maxLength=null;
-    private ?int $minItems=null;
-    private ?int $maxItems=null;
+    public ?string $patterns=null;
+    public ?string $format=null;
+    public ?int $minLength=null;
+    public ?int $maxLength=null;
+    public ?int $minItems=null;
+    public ?int $maxItems=null;
 
     public function __construct (string $name) {
         $this->name = $name;
     }
 
-    public function isArray() : bool {
+    /*public function isArray() : bool {
         return $this->array;
     }
     public function setArray(bool $array) : void {
         $this->array = $array;
-    }
+    }*/
 
     public function getName() : string {
         return $this->name;
@@ -35,35 +38,45 @@ class ValueValidatorSchema {
         return $this->name;
     }
 
-    public function isBuiltIn() : bool {
+    /*public function isBuiltIn() : bool {
         return $this->builtIn;
     }
     public function setBuiltIn(bool $builtIn) : void {
         $this->builtIn = $builtIn;
-    }
+    }*/
 
     public function isOptional() : bool {
         return $this->optional;
     }
-    public function setOptional(bool $optional) : void {
+    public function setOptional(bool $optional) : self {
         $this->optional = $optional;
+        return $this;
     }
 
-    public function setType(string $type) : void {
+    public function setType(string $type) : self {
         $this->type = $type;
+        return $this;
     }
     public function getType() :?string {
         return $this->type;
     }
 
-    public function setDeclaringClass(?string $declaringClass) : void {
-        $this->declaringClass                       = $declaringClass;
+    /**
+     * @param ValueValidatorSchema[]|null $childSchemas
+     * @return $this
+     */
+    public function setChildSchemas(array $childSchemas=null) : self {
+        $this->childSchemas                         = $childSchemas;
+        return $this;
     }
-    public function hasDeclaringClass() : bool {
-        return (bool)$this->declaringClass;
+    public function hasChildSchemas() : bool {
+        return $this->childSchemas && count($this->childSchemas);
     }
-    public function getDeclaringClass() : ?string {
-        return $this->declaringClass;
+    /**
+     * @return ValueValidatorSchema[]|null
+     */
+    public function getChildSchemas() : ?array {
+        return $this->childSchemas;
     }
 
     public function setPatterns(?string $patterns) : self {
