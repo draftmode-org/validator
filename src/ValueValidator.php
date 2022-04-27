@@ -6,23 +6,71 @@ use RuntimeException;
 
 class ValueValidator implements ValueValidatorInterface {
 
-    public function validateContent($content, ValueValidatorSchema $contentSchema) : void {
-        $this->validateLength($content, $contentSchema->getMinLength(), $contentSchema->getMaxLength());
-        $this->validateItems($content, $contentSchema->getMinItems(), $contentSchema->getMaxItems());
-        $this->validateFormat($content, $contentSchema->getFormat());
-        $this->validatePatterns($content, $contentSchema->getPatterns());
+    public function validateSchema($content, ValueValidatorSchema $contentSchema, ?string $parentPropertyName=null) : void {
+        switch ($contentSchema->getType()) {
+            case "object":
+                if ($contentSchema->hasChildSchemas()) {
+                    $this->validateSchemas($content, $contentSchema->getChildSchemas(), $contentSchema->getName());
+                } else {
+                    throw new RuntimeException($contentSchema->getName()." is object and has no properties");
+                }
+                break;
+            default:
+                try {
+                    $this->validateContentType($content, $contentSchema->getType());
+                    $this->validateLength($content, $contentSchema->getMinLength(), $contentSchema->getMaxLength());
+                    $this->validateItems($content, $contentSchema->getMinItems(), $contentSchema->getMaxItems());
+                    $this->validateFormat($content, $contentSchema->getFormat());
+                    $this->validatePatterns($content, $contentSchema->getPatterns());
+                } catch (InvalidArgumentException $exception) {
+                    throw new InvalidArgumentException("argument $parentPropertyName invalid: ".$exception->getMessage());
+                }
+        }
+    }
+
+    /**
+     * @param $content
+     * @param array|ValueValidatorSchema[] $contentSchema
+     * @param string|null $parentPropertyName
+     * @return void
+     */
+    public function validateSchemas($content, array $contentSchema, ?string $parentPropertyName=null) : void {
+        $content                                    = (array)$content;
+        foreach ($contentSchema as $propertyName => $inputSchema) {
+            $fullPropertyName                       = $parentPropertyName ? $parentPropertyName.".".$propertyName : $propertyName;
+            $inputExists                            = array_key_exists($propertyName, $content);
+            if (!$inputSchema->isOptional() && !$inputExists) {
+                throw new InvalidArgumentException("argument $fullPropertyName required, missing");
+            }
+            if ($inputExists) {
+                $inputValue                         = $content[$propertyName];
+                $this->validateSchema($inputValue, $inputSchema,$fullPropertyName);
+                unset($content[$propertyName]);
+            }
+        }
+        $unmappedKeys                               = [];
+        foreach ($content as $cKey => $cValue) {
+            $unmappedKeys[]                         = $parentPropertyName ? $parentPropertyName.".".$cKey : $cKey;
+        }
+        if (count($unmappedKeys)) {
+            $arguments                              = "argument".(count($unmappedKeys) > 1 ? "s" : "");
+            throw new InvalidArgumentException("$arguments (".join(", ", $unmappedKeys).") not allowed");
+        }
     }
 
     /**
      * @param $content
      * @param string|null $expectedType
      */
-    public function validateContentType($content, ?string $expectedType) : void {
+    private function validateContentType($content, ?string $expectedType) : void {
         if (!$expectedType) {
             throw new RuntimeException("no type to be validated given");
         }
         $inputType                                  = gettype($content);
         if ($inputType === $expectedType) return;
+        if ($expectedType === "number" && $inputType === "string" && strval(intval($content)) === $content) {
+            return;
+        }
         throw new InvalidArgumentException("type $expectedType expected, given $inputType");
     }
 
