@@ -22,7 +22,7 @@
     "require-dev" : {
         "phpunit/phpunit": "^9.3",
         "vimeo/psalm": "4.x-dev",
-        "terrazza/logger": "dev-main"
+        "terrazza/dev-logger": "dev-main"
     },
     "autoload": {
         "psr-4": {

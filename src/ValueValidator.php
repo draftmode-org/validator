@@ -23,7 +23,9 @@ class ValueValidator implements ValueValidatorInterface {
                     $this->validateFormat($content, $contentSchema->getFormat());
                     $this->validatePatterns($content, $contentSchema->getPatterns());
                 } catch (InvalidArgumentException $exception) {
-                    throw new InvalidArgumentException("argument $parentPropertyName invalid: ".$exception->getMessage());
+                    $argumentName                   = $contentSchema->getName();
+                    $fullPropertyName               = $parentPropertyName ? $parentPropertyName.".".$argumentName : $argumentName;
+                    throw new InvalidArgumentException("argument $fullPropertyName invalid: ".$exception->getMessage());
                 }
         }
     }

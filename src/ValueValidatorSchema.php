@@ -3,22 +3,22 @@
 namespace Terrazza\Component\Validator;
 
 class ValueValidatorSchema {
-    public string $name;
+    private string $name;
     //public bool $array=false;
     //public bool $builtIn=false;
-    public bool $optional=true;
-    public ?string $type=null;
-    /**
-     * @var ValueValidatorSchema[]|null
-     */
-    public ?array $childSchemas=null;
-
+    private bool $optional=true;
+    private ?string $type=null;
     public ?string $patterns=null;
     public ?string $format=null;
     public ?int $minLength=null;
     public ?int $maxLength=null;
     public ?int $minItems=null;
     public ?int $maxItems=null;
+    /**
+     * @var ValueValidatorSchema[]|null
+     */
+    public ?array $childSchemas=null;
+
 
     public function __construct (string $name) {
         $this->name = $name;

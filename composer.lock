@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b7ea559ef219415c5a2c09a902144558",
+    "content-hash": "387a4083a531d58d0477846a6f0f9574",
     "packages": [
         {
             "name": "psr/log",
@@ -1304,12 +1304,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/php-code-coverage.git",
-                "reference": "606275620e249aad454119d75a323e0a3ba9af3d"
+                "reference": "5b85faa0aedb9b1ee542d00932a3aac5d0b9f56c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/606275620e249aad454119d75a323e0a3ba9af3d",
-                "reference": "606275620e249aad454119d75a323e0a3ba9af3d",
+                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/5b85faa0aedb9b1ee542d00932a3aac5d0b9f56c",
+                "reference": "5b85faa0aedb9b1ee542d00932a3aac5d0b9f56c",
                 "shasum": ""
             },
             "require": {
@@ -1373,7 +1373,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2022-04-11T06:10:56+00:00"
+            "time": "2022-05-03T08:11:05+00:00"
         },
         {
             "name": "phpunit/php-file-iterator",
@@ -1622,12 +1622,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "66d3ef0baef2f6aa5f385bc01fa447a352bd8966"
+                "reference": "f53bae505d8e545cc23a1bbb6d66df9cbeb91f70"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/66d3ef0baef2f6aa5f385bc01fa447a352bd8966",
-                "reference": "66d3ef0baef2f6aa5f385bc01fa447a352bd8966",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/f53bae505d8e545cc23a1bbb6d66df9cbeb91f70",
+                "reference": "f53bae505d8e545cc23a1bbb6d66df9cbeb91f70",
                 "shasum": ""
             },
             "require": {
@@ -1717,7 +1717,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2022-04-11T14:15:27+00:00"
+            "time": "2022-05-03T08:11:40+00:00"
         },
         {
             "name": "psr/container",
@@ -2137,12 +2137,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/environment.git",
-                "reference": "1b5dff7bb151a4db11d49d90e5408e4e938270f7"
+                "reference": "3fade0c8462024d0426a00dc1ad0a2fda0df733f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/environment/zipball/1b5dff7bb151a4db11d49d90e5408e4e938270f7",
-                "reference": "1b5dff7bb151a4db11d49d90e5408e4e938270f7",
+                "url": "https://api.github.com/repos/sebastianbergmann/environment/zipball/3fade0c8462024d0426a00dc1ad0a2fda0df733f",
+                "reference": "3fade0c8462024d0426a00dc1ad0a2fda0df733f",
                 "shasum": ""
             },
             "require": {
@@ -2184,7 +2184,7 @@
             ],
             "support": {
                 "issues": "https://github.com/sebastianbergmann/environment/issues",
-                "source": "https://github.com/sebastianbergmann/environment/tree/5.1.4"
+                "source": "https://github.com/sebastianbergmann/environment/tree/5.1"
             },
             "funding": [
                 {
@@ -2192,7 +2192,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2022-04-03T09:37:03+00:00"
+            "time": "2022-04-14T11:24:33+00:00"
         },
         {
             "name": "sebastian/exporter",
@@ -2737,12 +2737,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/console.git",
-                "reference": "900275254f0a1a2afff1ab0e11abd5587a10e1d6"
+                "reference": "06974380c667d7d8e3cd0f24bf51f816a71ca6c6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/console/zipball/900275254f0a1a2afff1ab0e11abd5587a10e1d6",
-                "reference": "900275254f0a1a2afff1ab0e11abd5587a10e1d6",
+                "url": "https://api.github.com/repos/symfony/console/zipball/06974380c667d7d8e3cd0f24bf51f816a71ca6c6",
+                "reference": "06974380c667d7d8e3cd0f24bf51f816a71ca6c6",
                 "shasum": ""
             },
             "require": {
@@ -2813,7 +2813,7 @@
                 "terminal"
             ],
             "support": {
-                "source": "https://github.com/symfony/console/tree/v5.4.7"
+                "source": "https://github.com/symfony/console/tree/5.4"
             },
             "funding": [
                 {
@@ -2829,7 +2829,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-03-31T17:09:19+00:00"
+            "time": "2022-05-06T08:44:16+00:00"
         },
         {
             "name": "symfony/deprecation-contracts",
@@ -3479,12 +3479,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/string.git",
-                "reference": "92043b7d8383e48104e411bc9434b260dbeb5a10"
+                "reference": "3c061a76bff6d6ea427d85e12ad1bb8ed8cd43e8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/string/zipball/92043b7d8383e48104e411bc9434b260dbeb5a10",
-                "reference": "92043b7d8383e48104e411bc9434b260dbeb5a10",
+                "url": "https://api.github.com/repos/symfony/string/zipball/3c061a76bff6d6ea427d85e12ad1bb8ed8cd43e8",
+                "reference": "3c061a76bff6d6ea427d85e12ad1bb8ed8cd43e8",
                 "shasum": ""
             },
             "require": {
@@ -3542,7 +3542,7 @@
                 "utf8"
             ],
             "support": {
-                "source": "https://github.com/symfony/string/tree/v5.4.3"
+                "source": "https://github.com/symfony/string/tree/v5.4.8"
             },
             "funding": [
                 {
@@ -3558,7 +3558,49 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-01-02T09:53:40+00:00"
+            "time": "2022-04-19T10:40:37+00:00"
+        },
+        {
+            "name": "terrazza/dev-logger",
+            "version": "dev-main",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/terrazza/dev.logger.git",
+                "reference": "332318fa340c25f6254148df2ce5a5e774a5e40c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/terrazza/dev.logger/zipball/332318fa340c25f6254148df2ce5a5e774a5e40c",
+                "reference": "332318fa340c25f6254148df2ce5a5e774a5e40c",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.4",
+                "terrazza/logger": "dev-main"
+            },
+            "default-branch": true,
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Terrazza\\Dev\\Logger\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Peter Fux",
+                    "email": "it@noframework.io"
+                }
+            ],
+            "description": "logger",
+            "support": {
+                "issues": "https://github.com/terrazza/dev.logger/issues",
+                "source": "https://github.com/terrazza/dev.logger/tree/main"
+            },
+            "time": "2022-05-09T21:50:42+00:00"
         },
         {
             "name": "terrazza/logger",
@@ -3566,12 +3608,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/terrazza/logger.git",
-                "reference": "a50fce363d4d741df6f7695486e35a7fbed7816c"
+                "reference": "0aa201948c78dd15814b2d94efd3d157c21bc6aa"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/terrazza/logger/zipball/a50fce363d4d741df6f7695486e35a7fbed7816c",
-                "reference": "a50fce363d4d741df6f7695486e35a7fbed7816c",
+                "url": "https://api.github.com/repos/terrazza/logger/zipball/0aa201948c78dd15814b2d94efd3d157c21bc6aa",
+                "reference": "0aa201948c78dd15814b2d94efd3d157c21bc6aa",
                 "shasum": ""
             },
             "require": {
@@ -3604,7 +3646,7 @@
                 "issues": "https://github.com/terrazza/logger/issues",
                 "source": "https://github.com/terrazza/logger/tree/main"
             },
-            "time": "2022-03-04T15:51:55+00:00"
+            "time": "2022-05-09T21:03:17+00:00"
         },
         {
             "name": "theseer/tokenizer",
@@ -3662,12 +3704,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/vimeo/psalm.git",
-                "reference": "6d0cc07255402a1c2ff5b2a2e913fbcbf73f7689"
+                "reference": "90d2b3cf5e897da71f8ca8fef7eee124d68ad3a3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/vimeo/psalm/zipball/6d0cc07255402a1c2ff5b2a2e913fbcbf73f7689",
-                "reference": "6d0cc07255402a1c2ff5b2a2e913fbcbf73f7689",
+                "url": "https://api.github.com/repos/vimeo/psalm/zipball/90d2b3cf5e897da71f8ca8fef7eee124d68ad3a3",
+                "reference": "90d2b3cf5e897da71f8ca8fef7eee124d68ad3a3",
                 "shasum": ""
             },
             "require": {
@@ -3762,7 +3804,7 @@
                 "issues": "https://github.com/vimeo/psalm/issues",
                 "source": "https://github.com/vimeo/psalm/tree/4.x"
             },
-            "time": "2022-04-10T08:20:30+00:00"
+            "time": "2022-05-08T20:43:51+00:00"
         },
         {
             "name": "webmozart/assert",
@@ -3770,17 +3812,17 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/webmozarts/assert.git",
-                "reference": "b419d648592b0b8911cbbe10d450fe314f4fd262"
+                "reference": "dc96b6775d038bfa31a240150ad8505bfb856c2d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webmozarts/assert/zipball/b419d648592b0b8911cbbe10d450fe314f4fd262",
-                "reference": "b419d648592b0b8911cbbe10d450fe314f4fd262",
+                "url": "https://api.github.com/repos/webmozarts/assert/zipball/dc96b6775d038bfa31a240150ad8505bfb856c2d",
+                "reference": "dc96b6775d038bfa31a240150ad8505bfb856c2d",
                 "shasum": ""
             },
             "require": {
-                "php": "^7.2 || ^8.0",
-                "symfony/polyfill-ctype": "^1.8"
+                "ext-ctype": "*",
+                "php": "^7.2 || ^8.0"
             },
             "conflict": {
                 "phpstan/phpstan": "<0.12.20",
@@ -3821,7 +3863,7 @@
                 "issues": "https://github.com/webmozarts/assert/issues",
                 "source": "https://github.com/webmozarts/assert/tree/master"
             },
-            "time": "2021-06-19T13:45:26+00:00"
+            "time": "2022-04-18T06:42:29+00:00"
         },
         {
             "name": "webmozart/path-util",
@@ -3880,7 +3922,7 @@
     "minimum-stability": "dev",
     "stability-flags": {
         "vimeo/psalm": 20,
-        "terrazza/logger": 20
+        "terrazza/dev-logger": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,
