@@ -2,20 +2,24 @@
 
 namespace Terrazza\Component\Validator;
 
-class ValueValidatorSchema {
+class ObjectValueSchema {
     private string $name;
     //public bool $array=false;
     //public bool $builtIn=false;
     private bool $optional=true;
+    private bool $nullable=false;
     private ?string $type=null;
-    public ?string $patterns=null;
-    public ?string $format=null;
-    public ?int $minLength=null;
-    public ?int $maxLength=null;
-    public ?int $minItems=null;
-    public ?int $maxItems=null;
+    private ?string $patterns=null;
+    private ?string $format=null;
+    private ?int $minLength=null;
+    private ?int $maxLength=null;
+    private ?int $minItems=null;
+    private ?int $maxItems=null;
+    private ?float $minRange=null;
+    private ?float $maxRange=null;
+    private ?float $multipleOf=null;
     /**
-     * @var ValueValidatorSchema[]|null
+     * @var ObjectValueSchema[]|null
      */
     public ?array $childSchemas=null;
 
@@ -52,6 +56,13 @@ class ValueValidatorSchema {
         $this->optional = $optional;
         return $this;
     }
+    public function isNullable() : bool {
+        return $this->nullable;
+    }
+    public function setNullable(bool $nullable) : self {
+        $this->nullable = $nullable;
+        return $this;
+    }
 
     public function setType(string $type) : self {
         $this->type = $type;
@@ -62,7 +73,7 @@ class ValueValidatorSchema {
     }
 
     /**
-     * @param ValueValidatorSchema[]|null $childSchemas
+     * @param ObjectValueSchema[]|null $childSchemas
      * @return $this
      */
     public function setChildSchemas(array $childSchemas=null) : self {
@@ -73,7 +84,7 @@ class ValueValidatorSchema {
         return $this->childSchemas && count($this->childSchemas);
     }
     /**
-     * @return ValueValidatorSchema[]|null
+     * @return ObjectValueSchema[]|null
      */
     public function getChildSchemas() : ?array {
         return $this->childSchemas;
@@ -125,5 +136,29 @@ class ValueValidatorSchema {
     }
     public function getMaxItems(): ?int {
         return $this->maxItems;
+    }
+
+    public function setMinRange(?float $minRange): self {
+        $this->minRange = $minRange;
+        return $this;
+    }
+    public function getMinRange(): ?float {
+        return $this->minRange;
+    }
+
+    public function setMaxRange(?float $maxRange): self {
+        $this->maxRange = $maxRange;
+        return $this;
+    }
+    public function getMaxRange(): ?float {
+        return $this->maxRange;
+    }
+
+    public function setMultipleOf(?float $multipleOf): self {
+        $this->multipleOf = $multipleOf;
+        return $this;
+    }
+    public function getMultipleOf(): ?float {
+        return $this->multipleOf;
     }
 }

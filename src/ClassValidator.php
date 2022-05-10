@@ -11,16 +11,16 @@ class ClassValidator implements ClassValidatorInterface {
     CONST validatePattern                           = '/@validate\s\(+([^\s]+)\)/';
     CONST validateIsValueObject                     = '/@validate\/isValueObject/';
     private LoggerInterface $logger;
-    private ValueValidatorInterface $valueValidator;
+    private ObjectValueValidatorInterface $valueValidator;
 
     public function __construct(LoggerInterface $logger) {
-        $this->valueValidator                       = new ValueValidator();
+        $this->valueValidator                       = new ObjectValueValidator();
         $this->logger                               = $logger;
     }
 
     /**
      * @param $content
-     * @param ValueValidatorSchema[] $schemas
+     * @param ObjectValueSchema[] $schemas
      */
     public function validateSchemas($content, array $schemas) : void {
         $this->valueValidator->validateSchemas($content, $schemas);
@@ -28,15 +28,15 @@ class ClassValidator implements ClassValidatorInterface {
 
     /**
      * @param $content
-     * @param ValueValidatorSchema $schema
+     * @param ObjectValueSchema $schema
      */
-    public function validateSchema($content, ValueValidatorSchema $schema) : void {
+    public function validateSchema($content, ObjectValueSchema $schema) : void {
         $this->valueValidator->validateSchema($content, $schema);
     }
 
     /**
      * @param class-string<T> $className
-     * @return ValueValidatorSchema[]
+     * @return ObjectValueSchema[]
      */
     public function getClassSchema(string $className) : array {
         $arrTypeConvert                             = [
@@ -47,7 +47,7 @@ class ClassValidator implements ClassValidatorInterface {
             $rClass                                 = new ReflectionClass($className);
             foreach ($rClass->getProperties() as $rProperty) {
                 $rPropertyName                      = $rProperty->getName();
-                $inputSchema                        = (new ValueValidatorSchema($rProperty->getName()));
+                $inputSchema                        = (new ObjectValueSchema($rProperty->getName()));
                 if (preg_match(self::validatePattern, $rProperty->getDocComment(), $matches)) {
                     if ($rPropertyType = $rProperty->getType()) {
                         $type                       = strtr($rPropertyType->getName(), $arrTypeConvert);
@@ -110,12 +110,12 @@ class ClassValidator implements ClassValidatorInterface {
     }
 
     /**
-     * @param ValueValidatorSchema $inputSchema
+     * @param ObjectValueSchema $inputSchema
      * @param string $className
-     * @return ValueValidatorSchema
+     * @return ObjectValueSchema
      * @throws ReflectionException
      */
-    private function getClassInputSchema(ValueValidatorSchema $inputSchema, string $className) : ValueValidatorSchema {
+    private function getClassInputSchema(ObjectValueSchema $inputSchema, string $className) : ObjectValueSchema {
         $childSchemas                               = $this->getClassSchema($className);
         $this->logger->debug("count of properties for class $className, ".count($childSchemas));
         if (count($childSchemas) === 1) {

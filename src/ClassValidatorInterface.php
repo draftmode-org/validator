@@ -4,17 +4,17 @@ namespace Terrazza\Component\Validator;
 interface ClassValidatorInterface {
     /**
      * @param class-string<T> $className
-     * @return ValueValidatorSchema[]
+     * @return ObjectValueSchema[]
      */
     public function getClassSchema(string $className) : array;
     /**
      * @param $content
-     * @param ValueValidatorSchema[] $schemas
+     * @param ObjectValueSchema[] $schemas
      */
     public function validateSchemas($content, array $schemas) : void;
     /**
      * @param $content
-     * @param ValueValidatorSchema $schema
+     * @param ObjectValueSchema $schema
      */
-    public function validateSchema($content, ValueValidatorSchema $schema) : void;
+    public function validateSchema($content, ObjectValueSchema $schema) : void;
 }

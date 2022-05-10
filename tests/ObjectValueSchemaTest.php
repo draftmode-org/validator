@@ -1,11 +1,11 @@
 <?php
 namespace Terrazza\Component\Validator\Tests;
 use PHPUnit\Framework\TestCase;
-use Terrazza\Component\Validator\ValueValidatorSchema;
+use Terrazza\Component\Validator\ObjectValueSchema;
 
-class ValueValidatorSchemaTest extends TestCase {
+class ObjectValueSchemaTest extends TestCase {
     function testSetters() {
-        $schema = (new ValueValidatorSchema($name = "price"))
+        $schema = (new ObjectValueSchema($name = "price"))
             ->setType($type = "string")
             ->setOptional($optional = false)
             ->setPatterns($patterns = "1")
@@ -14,6 +14,8 @@ class ValueValidatorSchemaTest extends TestCase {
             ->setMinItems($minItems = 1)
             ->setMaxItems($maxItems = 2)
             ->setFormat($format = "Date")
+            ->setMinRange($minRange = 1)
+            ->setMaxRange($maxRange = 2)
         ;
         $schema->setChildSchemas([$schema]);
         $this->assertEquals([
@@ -23,6 +25,8 @@ class ValueValidatorSchemaTest extends TestCase {
             $patterns,
             $minLength,
             $maxLength,
+            $minRange,
+            $maxRange,
             $minItems,
             $maxItems,
             $format,
@@ -35,6 +39,8 @@ class ValueValidatorSchemaTest extends TestCase {
             $schema->getPatterns(),
             $schema->getMinLength(),
             $schema->getMaxLength(),
+            $schema->getMinRange(),
+            $schema->getMaxRange(),
             $schema->getMinItems(),
             $schema->getMaxItems(),
             $schema->getFormat(),
@@ -44,7 +50,7 @@ class ValueValidatorSchemaTest extends TestCase {
     }
 
     function testDefaults() {
-        $schema = new ValueValidatorSchema("price");
+        $schema = new ObjectValueSchema("price");
         $this->assertEquals([
             null,
             true,
