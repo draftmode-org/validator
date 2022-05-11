@@ -106,10 +106,17 @@ class ObjectValueValidator implements ObjectValueValidatorInterface {
             }
             $content                                = $this->getEncodeValue($content, $contentSchema);
             $this->validateContentType($content, $contentSchema->isNullable(), $contentSchema->getType());
-            $this->validateArray($content, $contentSchema->getMinItems(), $contentSchema->getMaxItems());
+            if (is_array($content)) {
+                $this->validateArray($content, $contentSchema->getMinItems(), $contentSchema->getMaxItems());
+            }
             $this->validateString($content, $contentSchema->getMinLength(), $contentSchema->getMaxLength(), $contentSchema->getPatterns());
             $this->validateNumber($content, $contentSchema->getMinRange(), $contentSchema->getMaxRange(), $contentSchema->getMultipleOf());
-            $this->validateFormat($content, $contentSchema->getFormat());
+            if ($contentSchema->getFormat()) {
+                $this->validateFormat($content, $contentSchema->getFormat());
+            }
+            if ($contentSchema->hasEnum()) {
+                $this->validateEnum($content, $contentSchema->getEnum());
+            }
         } catch (InvalidObjectValueArgumentException $exception) {
             $argumentName                       = $contentSchema->getName();
             $fullPropertyName                   = $this->parentPropertyName ? $this->parentPropertyName.".".$argumentName : $argumentName;
@@ -208,9 +215,9 @@ class ObjectValueValidator implements ObjectValueValidatorInterface {
 
     /**
      * @param $content
-     * @param string|null $format
+     * @param string $format
      */
-    private function validateFormat($content, ?string $format): void {
+    private function validateFormat($content, string $format): void {
         if (!is_scalar($content)) return;
         switch ($format) {
             case "date":
@@ -230,13 +237,22 @@ class ObjectValueValidator implements ObjectValueValidatorInterface {
 
     /**
      * @param $content
+     * @param array $enum
+     */
+    private function validateEnum($content, array $enum) : void {
+        if (!is_scalar($content)) return;
+        foreach ($enum as $enumValue) {
+            if ($content === $enumValue) return;
+        }
+        throw new InvalidObjectValueArgumentException("possible values are ".join(", ", $enum).", given $content");
+    }
+
+    /**
+     * @param array $content
      * @param int|null $minItems
      * @param int|null $maxItems
      */
-    private function validateArray($content, ?int $minItems, ?int $maxItems) : void {
-        if (!is_array($content)) {
-            return;
-        }
+    private function validateArray(array $content, ?int $minItems, ?int $maxItems) : void {
         if ($minItems && count($content) < $minItems) {
             throw new InvalidObjectValueArgumentException("min items $minItems expected, given items ".count($content));
         }

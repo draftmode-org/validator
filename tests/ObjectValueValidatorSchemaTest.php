@@ -156,6 +156,21 @@ class ObjectValueValidatorSchemaTest extends TestCase {
         ]);
     }
 
+    function testEnum() {
+        $validator              = new ObjectValueValidator;
+        $validateSchemaEnum     = (new ObjectValueSchema("enum", "integer"))
+            ->setEnum([1,2]);
+        $this->assertEquals([
+            true,
+            true,
+            false
+        ],[
+            $validator->isValid(1, $validateSchemaEnum),
+            $validator->isValid(2, $validateSchemaEnum),
+            $validator->isValid("2", $validateSchemaEnum),
+        ]);
+    }
+
     function testOneOf() {
         $validator              = new ObjectValueValidator;
         $validateSchemaOneOf    = (new ObjectValueSchema("oneOf", "oneOf"))
@@ -163,12 +178,12 @@ class ObjectValueValidatorSchemaTest extends TestCase {
 
         $this->assertEquals([
             true,
-            //true,
-            //false
+            true,
+            false
         ],[
             $validator->isValid("22", $validateSchemaOneOf),
-            //$validator->isValid(22, $validateSchemaOneOf),
-            //$validator->isValid(true, $validateSchemaOneOf),
+            $validator->isValid(22, $validateSchemaOneOf),
+            $validator->isValid(true, $validateSchemaOneOf),
         ]);
     }
 }

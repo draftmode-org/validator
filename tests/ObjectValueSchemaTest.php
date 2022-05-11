@@ -16,6 +16,7 @@ class ObjectValueSchemaTest extends TestCase {
             ->setFormat($format = "Date")
             ->setMinRange($minRange = 1)
             ->setMaxRange($maxRange = 2)
+            ->setEnum($enum = [1,2])
         ;
         $schema->setChildSchemas($schema);
         $this->assertEquals([
@@ -33,6 +34,8 @@ class ObjectValueSchemaTest extends TestCase {
             $format,
             [$schema],
             true,
+            $enum,
+            true
         ],[
             $schema->getName(),
             $schema->getType(),
@@ -48,6 +51,8 @@ class ObjectValueSchemaTest extends TestCase {
             $schema->getFormat(),
             $schema->getChildSchemas(),
             $schema->hasChildSchemas(),
+            $schema->getEnum(),
+            $schema->hasEnum()
         ]);
     }
 
@@ -68,6 +73,8 @@ class ObjectValueSchemaTest extends TestCase {
             null,
             null,
             false,
+            null,
+            false
         ],[
             $schema->isRequired(),
             $schema->getPatterns(),
@@ -78,6 +85,8 @@ class ObjectValueSchemaTest extends TestCase {
             $schema->getFormat(),
             $schema->getChildSchemas(),
             $schema->hasChildSchemas(),
+            $schema->getEnum(),
+            $schema->hasEnum()
         ]);
     }
 

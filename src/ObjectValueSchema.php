@@ -19,6 +19,7 @@ class ObjectValueSchema {
     private ?float $minRange=null;
     private ?float $maxRange=null;
     private ?float $multipleOf=null;
+    private ?array $enum=null;
     /**
      * @var ObjectValueSchema[]|null
      */
@@ -160,5 +161,15 @@ class ObjectValueSchema {
     }
     public function getMultipleOf(): ?float {
         return $this->multipleOf;
+    }
+    public function setEnum(array $enum) : self {
+        $this->enum = $enum;
+        return $this;
+    }
+    public function hasEnum() : bool {
+        return $this->enum ? count($this->enum) : false;
+    }
+    public function getEnum() : ?array {
+        return $this->enum;
     }
 }

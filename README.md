@@ -40,6 +40,8 @@ Properties:
 <br>_only used for type: number, integer, double_
 - multipleOf (float, optional)
 <br>_only used for type: number, integer, double_
+- enum (scalar, optional)
+<br>_only used for type: number, integer, double_
 - childSchemas (arrayOf ObjectValueSchema, optional)
 
 #### method: isMultipleType
@@ -60,6 +62,7 @@ Validate the content against
 - validateString 
 - validateNumber 
 - validateFormat
+- validateEnum
 
 #### method: getEncodedValue
 Method try to solve some content : schema mismatches that could be solved.<br>
