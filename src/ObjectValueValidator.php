@@ -1,21 +1,23 @@
 <?php
 namespace Terrazza\Component\Validator;
 use DateTime;
-use RuntimeException;
+use Terrazza\Component\Validator\Exception\InvalidObjectSchemaException;
 use Terrazza\Component\Validator\Exception\InvalidObjectValueArgumentException;
 use Throwable;
 
 class ObjectValueValidator implements ObjectValueValidatorInterface {
-    CONST boolean_values = ["true", "false", "1", "0", "yes", "no", 1, 0];
+    CONST boolean_true = ["true", "1", "yes", 1];
+    CONST boolean_false = ["false", "0", "no", 0];
+    private ?string $parentPropertyName=null;
+
     /**
      * @param $content
-     * @param ObjectValueSchema $contentSchema
-     * @param string|null $parentPropertyName
+     * @param ObjectValueSchema ...$contentSchema
      * @return bool
      */
-    public function isValidSchema($content, ObjectValueSchema $contentSchema, ?string $parentPropertyName=null) : bool {
+    public function isValid($content, ObjectValueSchema ...$contentSchema) : bool {
         try {
-            $this->validateSchema($content, $contentSchema, $parentPropertyName);
+            $this->validate($content, ...$contentSchema);
             return true;
         } catch (Throwable $exception) {
             return false;
@@ -24,72 +26,118 @@ class ObjectValueValidator implements ObjectValueValidatorInterface {
 
     /**
      * @param $content
-     * @param ObjectValueSchema $contentSchema
-     * @param string|null $parentPropertyName
+     * @param ObjectValueSchema ...$contentSchema
+     * @throws InvalidObjectValueArgumentException
      */
-    public function validateSchema($content, ObjectValueSchema $contentSchema, ?string $parentPropertyName=null) : void {
-        switch ($contentSchema->getType()) {
-            case "object":
-                if ($contentSchema->hasChildSchemas()) {
-                    $this->validateSchemas($content, $contentSchema->getChildSchemas(), $contentSchema->getName());
-                } else {
-                    throw new RuntimeException($contentSchema->getName()." is object and has no properties");
-                }
-                break;
-            default:
-                try {
-                    $this->validateContentType($content, $contentSchema->isNullable(), $contentSchema->getType());
-                    $this->validateArray($content, $contentSchema->getMinItems(), $contentSchema->getMaxItems());
-                    $this->validateString($content, $contentSchema->getMinLength(), $contentSchema->getMaxLength(), $contentSchema->getPatterns());
-                    $this->validateNumber($content, $contentSchema->getMinRange(), $contentSchema->getMaxRange(), $contentSchema->getMultipleOf());
-                    $this->validateFormat($content, $contentSchema->getFormat());
-                } catch (InvalidObjectValueArgumentException $exception) {
-                    $argumentName                   = $contentSchema->getName();
-                    $fullPropertyName               = $parentPropertyName ? $parentPropertyName.".".$argumentName : $argumentName;
-                    throw new InvalidObjectValueArgumentException("argument $fullPropertyName invalid: ".$exception->getMessage());
-                }
+    public function validate($content, ObjectValueSchema ...$contentSchema) : void {
+        $useSchema                                  = null;
+        $useSchemas                                 = null;
+        if (count($contentSchema) === 1) {
+            $useSchema                              = array_shift($contentSchema);
+            if ($useSchema->hasChildSchemas()) {
+                $useSchemas                         = $useSchema->getChildSchemas();
+                $useSchema                          = null;
+            }
+        } else {
+            $useSchemas                             = $contentSchema;
+        }
+        if ($useSchema) {
+            $schema                                 = clone $useSchema;
+            $this->validateSchema($content, $schema);
+        } elseif ($useSchemas) {
+            $this->validateSchemas($content, $useSchemas);
         }
     }
 
     /**
      * @param $content
-     * @param array $contentSchema
-     * @param string|null $parentPropertyName
-     * @return bool
+     * @param ObjectValueSchema $schema
+     * @return mixed
      */
-    public function isValidSchemas($content, array $contentSchema, ?string $parentPropertyName=null) : bool {
+    public function getEncodeValue($content, ObjectValueSchema $schema) {
+        if (is_null($content)) {
+            return null;
+        }
+        $expectedType                               = $schema->getType();
+        $inputType                                  = gettype($content);
+        if ($inputType === $expectedType) {
+            return $content;
+        }
+        if ($expectedType === "number") {
+            if ($inputType === "integer" || $inputType === "double") {
+                $schema->setType($inputType);
+                return $content;
+            }
+            if ($inputType === "string" && strval(intval($content)) === $content) {
+                $schema->setType("integer");
+                return intval($content);
+            }
+        }
+        if ($expectedType === "boolean") {
+            if ($inputType === "string") {
+                if (in_array(strtolower($content), self::boolean_true, true)) {
+                    return true;
+                }
+                elseif (in_array(strtolower($content), self::boolean_false, true)) {
+                    return false;
+                }
+            }
+            elseif ($inputType === "integer") {
+                if (in_array($content, self::boolean_true, true)) {
+                    return true;
+                }
+                elseif (in_array($content, self::boolean_false, true)) {
+                    return false;
+                }
+            }
+        }
+        return $content;
+    }
+
+    /**
+     * @param $content
+     * @param ObjectValueSchema $contentSchema
+     * @throws InvalidObjectValueArgumentException
+     */
+    private function validateSchema($content, ObjectValueSchema $contentSchema) : void {
         try {
-            $this->validateSchemas($content, $contentSchema, $parentPropertyName);
-            return true;
-        } catch (Throwable $exception) {
-            return false;
+            $content                        = $this->getEncodeValue($content, $contentSchema);
+            $this->validateContentType($content, $contentSchema->isNullable(), $contentSchema->getType());
+            $this->validateArray($content, $contentSchema->getMinItems(), $contentSchema->getMaxItems());
+            $this->validateString($content, $contentSchema->getMinLength(), $contentSchema->getMaxLength(), $contentSchema->getPatterns());
+            $this->validateNumber($content, $contentSchema->getMinRange(), $contentSchema->getMaxRange(), $contentSchema->getMultipleOf());
+            $this->validateFormat($content, $contentSchema->getFormat());
+        } catch (InvalidObjectValueArgumentException $exception) {
+            $argumentName                   = $contentSchema->getName();
+            $fullPropertyName               = $this->parentPropertyName ? $this->parentPropertyName.".".$argumentName : $argumentName;
+            throw new InvalidObjectValueArgumentException("argument $fullPropertyName invalid: ".$exception->getMessage());
         }
     }
 
     /**
      * @param $content
      * @param array|ObjectValueSchema[] $contentSchema
-     * @param string|null $parentPropertyName
      * @return void
      */
-    public function validateSchemas($content, array $contentSchema, ?string $parentPropertyName=null) : void {
+    private function validateSchemas($content, array $contentSchema) : void {
         $content                                    = (array)$content;
         foreach ($contentSchema as $inputSchema) {
             $propertyName                           = $inputSchema->getName();
-            $fullPropertyName                       = $parentPropertyName ? $parentPropertyName.".".$propertyName : $propertyName;
+            $fullPropertyName                       = $this->parentPropertyName ? $this->parentPropertyName.".".$propertyName : $propertyName;
             $inputExists                            = array_key_exists($propertyName, $content);
-            if (!$inputSchema->isOptional() && !$inputExists) {
+            if ($inputSchema->isRequired() && !$inputExists) {
                 throw new InvalidObjectValueArgumentException("argument $fullPropertyName required, missing");
             }
             if ($inputExists) {
                 $inputValue                         = $content[$propertyName];
-                $this->validateSchema($inputValue, $inputSchema,$fullPropertyName);
+                $this->parentPropertyName           = $fullPropertyName;
+                $this->validateSchema($inputValue, $inputSchema);
                 unset($content[$propertyName]);
             }
         }
         $unmappedKeys                               = [];
         foreach ($content as $cKey => $cValue) {
-            $unmappedKeys[]                         = $parentPropertyName ? $parentPropertyName.".".$cKey : $cKey;
+            $unmappedKeys[]                         = $this->parentPropertyName ? $this->parentPropertyName.".".$cKey : $cKey;
         }
         if (count($unmappedKeys)) {
             $arguments                              = "argument".(count($unmappedKeys) > 1 ? "s" : "");
@@ -100,12 +148,10 @@ class ObjectValueValidator implements ObjectValueValidatorInterface {
     /**
      * @param $content
      * @param bool $nullable
-     * @param string|null $expectedType
+     * @param string $expectedType
+     * @throws InvalidObjectValueArgumentException
      */
-    private function validateContentType($content, bool $nullable, ?string $expectedType) : void {
-        if (!$expectedType) {
-            throw new RuntimeException("no type to be validated given");
-        }
+    private function validateContentType($content, bool $nullable, string $expectedType) : void {
         if (is_null($content)) {
             if ($nullable) {
                 return;
@@ -115,24 +161,6 @@ class ObjectValueValidator implements ObjectValueValidatorInterface {
         }
         $inputType                                  = gettype($content);
         if ($inputType === $expectedType) return;
-        if ($expectedType === "number") {
-            if ($inputType === "integer" || $inputType === "double") {
-                return;
-            }
-            if ($inputType === "string" && strval(intval($content)) === $content) {
-                return;
-            }
-        }
-        if ($expectedType === "boolean") {
-            if ($inputType === "string" && in_array(strtolower($content), self::boolean_values, true)) {
-                return;
-            }
-            elseif ($inputType === "integer" && in_array($content, self::boolean_values, true)) {
-                return;
-            } else {
-                throw new InvalidObjectValueArgumentException("type $expectedType expected (".join(",", array_unique(self::boolean_values))."), given $inputType");
-            }
-        }
         throw new InvalidObjectValueArgumentException("type $expectedType expected, given $inputType");
     }
 

@@ -1,13 +1,13 @@
 <?php
 namespace Terrazza\Component\Validator\Tests;
 use PHPUnit\Framework\TestCase;
+use Terrazza\Component\Validator\Exception\InvalidObjectSchemaException;
 use Terrazza\Component\Validator\ObjectValueSchema;
 
 class ObjectValueSchemaTest extends TestCase {
     function testSetters() {
-        $schema = (new ObjectValueSchema($name = "price"))
-            ->setType($type = "string")
-            ->setOptional($optional = false)
+        $schema = (new ObjectValueSchema($name = "price", $type = "string"))
+            ->setRequired($required = true)
             ->setPatterns($patterns = "1")
             ->setMinLength($minLength = 1)
             ->setMaxLength($maxLength = 2)
@@ -17,11 +17,11 @@ class ObjectValueSchemaTest extends TestCase {
             ->setMinRange($minRange = 1)
             ->setMaxRange($maxRange = 2)
         ;
-        $schema->setChildSchemas([$schema]);
+        $schema->setChildSchemas($schema);
         $this->assertEquals([
             $name,
             $type,
-            $optional,
+            $required,
             $patterns,
             $minLength,
             $maxLength,
@@ -35,7 +35,7 @@ class ObjectValueSchemaTest extends TestCase {
         ],[
             $schema->getName(),
             $schema->getType(),
-            $schema->isOptional(),
+            $schema->isRequired(),
             $schema->getPatterns(),
             $schema->getMinLength(),
             $schema->getMaxLength(),
@@ -50,10 +50,9 @@ class ObjectValueSchemaTest extends TestCase {
     }
 
     function testDefaults() {
-        $schema = new ObjectValueSchema("price");
+        $schema = new ObjectValueSchema("price", "string");
         $this->assertEquals([
-            null,
-            true,
+            false,
             null,
             null,
             null,
@@ -63,8 +62,7 @@ class ObjectValueSchemaTest extends TestCase {
             null,
             false
         ],[
-            $schema->getType(),
-            $schema->isOptional(),
+            $schema->isRequired(),
             $schema->getPatterns(),
             $schema->getMinLength(),
             $schema->getMaxLength(),
@@ -76,4 +74,14 @@ class ObjectValueSchemaTest extends TestCase {
         ]);
     }
 
+    function testInvalidType() {
+        $this->expectException(InvalidObjectSchemaException::class);
+        new ObjectValueSchema("price", "unknown");
+    }
+
+    function testSetInvalidType() {
+        $schema = new ObjectValueSchema("price", "string");
+        $this->expectException(InvalidObjectSchemaException::class);
+        $schema->setType("unknown");
+    }
 }

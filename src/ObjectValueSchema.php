@@ -2,13 +2,14 @@
 
 namespace Terrazza\Component\Validator;
 
+use Terrazza\Component\Validator\Exception\InvalidObjectSchemaException;
+
 class ObjectValueSchema {
+    CONST allowed_types = ["number", "integer", "double", "array", "boolean", "string", "object"];
     private string $name;
-    //public bool $array=false;
-    //public bool $builtIn=false;
-    private bool $optional=true;
+    private string $type;
+    private bool $required=false;
     private bool $nullable=false;
-    private ?string $type=null;
     private ?string $patterns=null;
     private ?string $format=null;
     private ?int $minLength=null;
@@ -24,38 +25,24 @@ class ObjectValueSchema {
     public ?array $childSchemas=null;
 
 
-    public function __construct (string $name) {
+    public function __construct (string $name, string $type) {
         $this->name = $name;
+        $this->validateType($type);
+        $this->type = $type;
     }
-
-    /*public function isArray() : bool {
-        return $this->array;
-    }
-    public function setArray(bool $array) : void {
-        $this->array = $array;
-    }*/
 
     public function getName() : string {
         return $this->name;
     }
-    public function __toString() : string {
-        return $this->name;
-    }
 
-    /*public function isBuiltIn() : bool {
-        return $this->builtIn;
+    public function isRequired() : bool {
+        return $this->required;
     }
-    public function setBuiltIn(bool $builtIn) : void {
-        $this->builtIn = $builtIn;
-    }*/
-
-    public function isOptional() : bool {
-        return $this->optional;
-    }
-    public function setOptional(bool $optional) : self {
-        $this->optional = $optional;
+    public function setRequired(bool $required) : self {
+        $this->required = $required;
         return $this;
     }
+
     public function isNullable() : bool {
         return $this->nullable;
     }
@@ -64,7 +51,18 @@ class ObjectValueSchema {
         return $this;
     }
 
+    private function validateType(string $type) : void {
+        if (!in_array($type, self::allowed_types)) {
+            throw new InvalidObjectSchemaException("allowed types: ".join(",", self::allowed_types).", given $type");
+        }
+    }
+    /**
+     * @param string $type
+     * @return $this
+     * @throws InvalidObjectSchemaException
+     */
     public function setType(string $type) : self {
+        $this->validateType($type);
         $this->type = $type;
         return $this;
     }
@@ -73,10 +71,10 @@ class ObjectValueSchema {
     }
 
     /**
-     * @param ObjectValueSchema[]|null $childSchemas
+     * @param ObjectValueSchema ...$childSchemas
      * @return $this
      */
-    public function setChildSchemas(array $childSchemas=null) : self {
+    public function setChildSchemas(ObjectValueSchema ...$childSchemas) : self {
         $this->childSchemas                         = $childSchemas;
         return $this;
     }
