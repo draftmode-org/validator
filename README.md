@@ -19,6 +19,7 @@ Properties:
   - boolean
   - string
   - object
+  - oneOf (require setChildSchemas)
 - required (bool, default=false)
 - nullable (bool, default=false)
 - patterns (string, optional)
@@ -41,9 +42,31 @@ Properties:
 <br>_only used for type: number, integer, double_
 - childSchemas (arrayOf ObjectValueSchema, optional)
 
+#### method: isMultipleType
+verifies if the type is one of 
+- oneOf
+
 <a id="object-validator" name="object-validator"></a>
 <a id="user-content-object-validator" name="user-content-validator"></a>
 ### ObjectValidator
 #### method: isValid
+Call method::validate but covered in a try/catch.<br>
+In case of catch the method returns false. Otherwise, the method returns true.
+
 #### method: validate
+Validate the content against
+- contentType
+- validateArray
+- validateString 
+- validateNumber 
+- validateFormat
+
 #### method: getEncodedValue
+Method try to solve some content : schema mismatches that could be solved.<br>
+In case of being able to solve a mismatch, the method
+- set the type of the schema to the converted one
+- returns the converted value 
+ 
+_Examples_
+- expected type: integer, given "12"
+- expected type: boolean, given "yes"

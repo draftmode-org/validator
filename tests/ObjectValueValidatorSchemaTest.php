@@ -155,4 +155,20 @@ class ObjectValueValidatorSchemaTest extends TestCase {
             $validator->isValid("2021-01-32", $validateSchemaDate),
         ]);
     }
+
+    function testOneOf() {
+        $validator              = new ObjectValueValidator;
+        $validateSchemaOneOf    = (new ObjectValueSchema("oneOf", "oneOf"))
+            ->setChildSchemas(new ObjectValueSchema("int", "integer"), new ObjectValueSchema("string", "string"));
+
+        $this->assertEquals([
+            true,
+            //true,
+            //false
+        ],[
+            $validator->isValid("22", $validateSchemaOneOf),
+            //$validator->isValid(22, $validateSchemaOneOf),
+            //$validator->isValid(true, $validateSchemaOneOf),
+        ]);
+    }
 }

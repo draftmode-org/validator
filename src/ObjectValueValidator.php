@@ -34,7 +34,7 @@ class ObjectValueValidator implements ObjectValueValidatorInterface {
         $useSchemas                                 = null;
         if (count($contentSchema) === 1) {
             $useSchema                              = array_shift($contentSchema);
-            if ($useSchema->hasChildSchemas()) {
+            if ($useSchema->hasChildSchemas() && !$useSchema->isMultipleType()) {
                 $useSchemas                         = $useSchema->getChildSchemas();
                 $useSchema                          = null;
             }
@@ -101,16 +101,37 @@ class ObjectValueValidator implements ObjectValueValidatorInterface {
      */
     private function validateSchema($content, ObjectValueSchema $contentSchema) : void {
         try {
-            $content                        = $this->getEncodeValue($content, $contentSchema);
+            if ($contentSchema->isMultipleType()) {
+                $contentSchema                      = $this->getSchemaFromMultiple($content, $contentSchema);
+            }
+            $content                                = $this->getEncodeValue($content, $contentSchema);
             $this->validateContentType($content, $contentSchema->isNullable(), $contentSchema->getType());
             $this->validateArray($content, $contentSchema->getMinItems(), $contentSchema->getMaxItems());
             $this->validateString($content, $contentSchema->getMinLength(), $contentSchema->getMaxLength(), $contentSchema->getPatterns());
             $this->validateNumber($content, $contentSchema->getMinRange(), $contentSchema->getMaxRange(), $contentSchema->getMultipleOf());
             $this->validateFormat($content, $contentSchema->getFormat());
         } catch (InvalidObjectValueArgumentException $exception) {
-            $argumentName                   = $contentSchema->getName();
-            $fullPropertyName               = $this->parentPropertyName ? $this->parentPropertyName.".".$argumentName : $argumentName;
+            $argumentName                       = $contentSchema->getName();
+            $fullPropertyName                   = $this->parentPropertyName ? $this->parentPropertyName.".".$argumentName : $argumentName;
             throw new InvalidObjectValueArgumentException("argument $fullPropertyName invalid: ".$exception->getMessage());
+        }
+    }
+
+    private function getSchemaFromMultiple($content, ObjectValueSchema $contentSchema) : ObjectValueSchema {
+        if ($contentSchema->hasChildSchemas()) {
+            foreach ($contentSchema->getChildSchemas() as $schema) {
+                if ($this->isValid($content, $schema)) {
+                    switch ($contentSchema->getType()) {
+                        case "oneOf":
+                            return $schema;
+                    }
+                }
+            }
+            throw new InvalidObjectValueArgumentException("does not match any childSchema");
+        } else {
+            $argumentName                       = $contentSchema->getName();
+            $fullPropertyName                   = $this->parentPropertyName ? $this->parentPropertyName.".".$argumentName : $argumentName;
+            throw new InvalidObjectSchemaException("argument $fullPropertyName invalid: no childSchema given");
         }
     }
 

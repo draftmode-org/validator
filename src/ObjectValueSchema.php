@@ -5,7 +5,7 @@ namespace Terrazza\Component\Validator;
 use Terrazza\Component\Validator\Exception\InvalidObjectSchemaException;
 
 class ObjectValueSchema {
-    CONST allowed_types = ["number", "integer", "double", "array", "boolean", "string", "object"];
+    CONST allowed_types = ["number", "integer", "double", "array", "boolean", "string", "object", /*specials*/ "oneOf"];
     private string $name;
     private string $type;
     private bool $required=false;
@@ -24,11 +24,10 @@ class ObjectValueSchema {
      */
     public ?array $childSchemas=null;
 
-
     public function __construct (string $name, string $type) {
-        $this->name = $name;
+        $this->name                                 = $name;
         $this->validateType($type);
-        $this->type = $type;
+        $this->type                                 = $type;
     }
 
     public function getName() : string {
@@ -69,6 +68,9 @@ class ObjectValueSchema {
     public function getType() :?string {
         return $this->type;
     }
+    public function isMultipleType() : bool {
+        return in_array($this->type, ["oneOf"]);
+    }
 
     /**
      * @param ObjectValueSchema ...$childSchemas
@@ -89,7 +91,7 @@ class ObjectValueSchema {
     }
 
     public function setPatterns(?string $patterns) : self {
-        $this->patterns = $patterns;
+        $this->patterns                             = $patterns;
         return $this;
     }
     public function getPatterns(): ?string {

@@ -21,6 +21,7 @@ class ObjectValueSchemaTest extends TestCase {
         $this->assertEquals([
             $name,
             $type,
+            false,
             $required,
             $patterns,
             $minLength,
@@ -31,10 +32,11 @@ class ObjectValueSchemaTest extends TestCase {
             $maxItems,
             $format,
             [$schema],
-            true
+            true,
         ],[
             $schema->getName(),
             $schema->getType(),
+            $schema->isMultipleType(),
             $schema->isRequired(),
             $schema->getPatterns(),
             $schema->getMinLength(),
@@ -45,8 +47,13 @@ class ObjectValueSchemaTest extends TestCase {
             $schema->getMaxItems(),
             $schema->getFormat(),
             $schema->getChildSchemas(),
-            $schema->hasChildSchemas()
+            $schema->hasChildSchemas(),
         ]);
+    }
+
+    function testIsMultipleType() {
+        $schema = new ObjectValueSchema("price", "oneOf");
+        $this->assertTrue($schema->isMultipleType());
     }
 
     function testDefaults() {
@@ -60,7 +67,7 @@ class ObjectValueSchemaTest extends TestCase {
             null,
             null,
             null,
-            false
+            false,
         ],[
             $schema->isRequired(),
             $schema->getPatterns(),
@@ -70,7 +77,7 @@ class ObjectValueSchemaTest extends TestCase {
             $schema->getMaxItems(),
             $schema->getFormat(),
             $schema->getChildSchemas(),
-            $schema->hasChildSchemas()
+            $schema->hasChildSchemas(),
         ]);
     }
 
