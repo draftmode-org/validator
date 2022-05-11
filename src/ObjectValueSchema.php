@@ -162,7 +162,7 @@ class ObjectValueSchema {
     public function getMultipleOf(): ?float {
         return $this->multipleOf;
     }
-    public function setEnum(array $enum) : self {
+    public function setEnum(?array $enum=null) : self {
         $this->enum = $enum;
         return $this;
     }
