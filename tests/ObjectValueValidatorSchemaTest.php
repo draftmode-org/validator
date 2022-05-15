@@ -4,12 +4,19 @@ namespace Terrazza\Component\Validator\Tests;
 use PHPUnit\Framework\TestCase;
 use Terrazza\Component\Validator\ObjectValueValidator;
 use Terrazza\Component\Validator\ObjectValueSchema;
+use Terrazza\Component\Validator\ObjectValueValidatorInterface;
+use Terrazza\Dev\Logger\Logger;
 
 class ObjectValueValidatorSchemaTest extends TestCase {
 
+    private function getValidator($stream=null) : ObjectValueValidatorInterface {
+        $logger                         = (new Logger("ObjectValueValidator"))->createLogger($stream);
+        return new ObjectValueValidator($logger);
+    }
+
     function testIsValidString() {
-        $validator              = new ObjectValueValidator;
-        $validateSchemaString   = (new ObjectValueSchema("name", "string"))
+        $validator                      = $this->getValidator(false);
+        $validateSchemaString           = (new ObjectValueSchema("validString", "string"))
             ->setMinLength(10)
             ->setMaxLength(12)
             ->setPatterns('^\d{3}-\d{2}-\d{4}$')
@@ -28,8 +35,8 @@ class ObjectValueValidatorSchemaTest extends TestCase {
     }
 
     function testIsValidInteger() {
-        $validator              = new ObjectValueValidator;
-        $validateSchemaInteger   = (new ObjectValueSchema("name", "integer"))
+        $validator                      = $this->getValidator(false);
+        $validateSchemaInteger          = (new ObjectValueSchema("validInteger", "integer"))
             ->setMinRange(3)
             ->setMaxRange(6)
             ->setMultipleOf(2);
@@ -48,8 +55,8 @@ class ObjectValueValidatorSchemaTest extends TestCase {
     }
 
     function testIsValidNumber() {
-        $validator              = new ObjectValueValidator;
-        $validateSchemaNumber = (new ObjectValueSchema("name", "number"));
+        $validator                      = $this->getValidator(false);
+        $validateSchemaNumber           = (new ObjectValueSchema("validNumber", "number"));
         $this->assertEquals([
             false,
             true,
@@ -64,9 +71,8 @@ class ObjectValueValidatorSchemaTest extends TestCase {
     }
 
     function testIsValidBoolean() {
-        $validator              = new ObjectValueValidator;
-
-        $validateSchemaBoolean = (new ObjectValueSchema("name", "boolean"));
+        $validator                      = $this->getValidator(false);
+        $validateSchemaBoolean          = (new ObjectValueSchema("validBoolean", "boolean"));
 
         $this->assertEquals([
             true,
@@ -92,9 +98,8 @@ class ObjectValueValidatorSchemaTest extends TestCase {
     }
 
     function testIsValidArray() {
-        $validator              = new ObjectValueValidator;
-
-        $validateSchemaArray   = (new ObjectValueSchema("name", "array"))
+        $validator                      = $this->getValidator(false);
+        $validateSchemaArray            = (new ObjectValueSchema("validArray", "array"))
             ->setMinItems(2)
             ->setMaxItems(3);
 
@@ -112,9 +117,9 @@ class ObjectValueValidatorSchemaTest extends TestCase {
     }
 
     function testIsValidNullable() {
-        $validator              = new ObjectValueValidator;
-        $validateSchemaNullableFalse   = (new ObjectValueSchema("name", "string"));
-        $validateSchemaNullableTrue   = (new ObjectValueSchema("name", "string"))
+        $validator                      = $this->getValidator(false);
+        $validateSchemaNullableFalse    = (new ObjectValueSchema("validNullableFalse", "string"));
+        $validateSchemaNullableTrue     = (new ObjectValueSchema("validNullableTrue", "string"))
             ->setNullable(true);
 
         $this->assertEquals([
@@ -127,8 +132,8 @@ class ObjectValueValidatorSchemaTest extends TestCase {
     }
 
     function testIsValidFormatEmail() {
-        $validator              = new ObjectValueValidator;
-        $validateSchemaEmail = (new ObjectValueSchema("name", "string"))
+        $validator                      = $this->getValidator(false);
+        $validateSchemaEmail            = (new ObjectValueSchema("validFormatEmail", "string"))
             ->setFormat("email");
 
         $this->assertEquals([
@@ -141,8 +146,8 @@ class ObjectValueValidatorSchemaTest extends TestCase {
     }
 
     function testIsValidFormatDate() {
-        $validator              = new ObjectValueValidator;
-        $validateSchemaDate = (new ObjectValueSchema("name", "string"))
+        $validator                      = $this->getValidator(false);
+        $validateSchemaDate             = (new ObjectValueSchema("validFormatDate", "string"))
             ->setFormat("date");
 
         $this->assertEquals([
@@ -157,8 +162,8 @@ class ObjectValueValidatorSchemaTest extends TestCase {
     }
 
     function testEnum() {
-        $validator              = new ObjectValueValidator;
-        $validateSchemaEnum     = (new ObjectValueSchema("enum", "integer"))
+        $validator                      = $this->getValidator(false);
+        $validateSchemaEnum             = (new ObjectValueSchema("enum", "integer"))
             ->setEnum([1,2]);
         $this->assertEquals([
             true,
@@ -167,13 +172,13 @@ class ObjectValueValidatorSchemaTest extends TestCase {
         ],[
             $validator->isValid(1, $validateSchemaEnum),
             $validator->isValid(2, $validateSchemaEnum),
-            $validator->isValid("2", $validateSchemaEnum),
+            $validator->isValid(4, $validateSchemaEnum),
         ]);
     }
 
     function testOneOf() {
-        $validator              = new ObjectValueValidator;
-        $validateSchemaOneOf    = (new ObjectValueSchema("oneOf", "oneOf"))
+        $validator                      = $this->getValidator(false);
+        $validateSchemaOneOf            = (new ObjectValueSchema("oneOf", "oneOf"))
             ->setChildSchemas(new ObjectValueSchema("int", "integer"), new ObjectValueSchema("string", "string"));
 
         $this->assertEquals([

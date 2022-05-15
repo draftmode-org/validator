@@ -5,17 +5,17 @@ use Terrazza\Component\Validator\Exception\InvalidObjectValueArgumentException;
 interface ObjectValueValidatorInterface {
     /**
      * @param $content
-     * @param ObjectValueSchema ...$contentSchema
+     * @param ObjectValueSchema $contentSchema
      * @return bool
      */
-    public function isValid($content, ObjectValueSchema ...$contentSchema) : bool;
+    public function isValid($content, ObjectValueSchema $contentSchema) : bool;
 
     /**
      * @param $content
-     * @param ObjectValueSchema ...$contentSchema
+     * @param ObjectValueSchema $contentSchema
      * @throws InvalidObjectValueArgumentException
      */
-    public function validate($content, ObjectValueSchema ...$contentSchema) : void;
+    public function validate($content, ObjectValueSchema $contentSchema) : void;
 
     /**
      * @param $content

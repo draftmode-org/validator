@@ -52,7 +52,7 @@ verifies if the type is one of
 <a id="user-content-object-validator" name="user-content-validator"></a>
 ### ObjectValidator
 #### method: isValid
-Call method::validate but covered in a try/catch.<br>
+calls method::validate but covered in a try/catch.<br>
 In case of catch the method returns false. Otherwise, the method returns true.
 
 #### method: validate
@@ -63,6 +63,7 @@ Validate the content against
 - validateNumber 
 - validateFormat
 - validateEnum
+- validateMultipleTypes (e.g. oneOf)
 
 #### method: getEncodedValue
 Method try to solve some content : schema mismatches that could be solved.<br>

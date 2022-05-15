@@ -63,7 +63,7 @@ class ObjectValueSchema {
      */
     public function setType(string $type) : self {
         $this->validateType($type);
-        $this->type = $type;
+        $this->type                                 = $type;
         return $this;
     }
     public function getType() :?string {

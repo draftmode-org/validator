@@ -1,66 +1,132 @@
 <?php
 namespace Terrazza\Component\Validator;
 use DateTime;
+use Psr\Log\LoggerInterface;
 use Terrazza\Component\Validator\Exception\InvalidObjectSchemaException;
 use Terrazza\Component\Validator\Exception\InvalidObjectValueArgumentException;
 use Throwable;
 
 class ObjectValueValidator implements ObjectValueValidatorInterface {
+    CONST objectExceptionNoChildSchemasTypeMultiple = "no childSchemas given for multiple types";
+    CONST valueExceptionNoMatchMultiple             = "does not match any childSchema";
+    CONST valueExceptionNonAssociative              = "expected associative array, given non associative";
+    private LoggerInterface $logger;
     CONST boolean_true                              = ["true", "1", "yes", 1];
     CONST boolean_false                             = ["false", "0", "no", 0];
     private array $propertyName                     = [];
-    private string $propertyPrefix                  = "argument";
+
+    public function __construct(LoggerInterface $logger) {
+        $this->logger                               = $logger;
+    }
 
     /**
      * @param $content
-     * @param ObjectValueSchema ...$contentSchema
+     * @param ObjectValueSchema $contentSchema
      * @return bool
      */
-    public function isValid($content, ObjectValueSchema ...$contentSchema) : bool {
+    public function isValid($content, ObjectValueSchema $contentSchema) : bool {
+        $this->resetPropertyName();
         try {
-            $this->validate($content, ...$contentSchema);
+            $this->validate($content, clone $contentSchema);
             return true;
         } catch (Throwable $exception) {
+            $this->logger->debug("isValid exception: ".$exception->getMessage());
             return false;
         }
     }
 
-    private function pushPropertyName(string $propertyName) : void {
-        $this->propertyName[]                       = $propertyName;
-    }
-    private function popPropertyName() : void {
-        array_pop($this->propertyName);
-    }
-    private function getPropertyName() : string {
-        return join(".", $this->propertyName);
-    }
-    private function getFullPropertyName() : string {
-        return $this->propertyPrefix." ".$this->getPropertyName();
+    /**
+     * @param $content
+     * @param ObjectValueSchema $contentSchema
+     * @throws InvalidObjectValueArgumentException
+     */
+    public function validate($content, ObjectValueSchema $contentSchema) : void {
+        try {
+            $this->pushPropertyName($contentSchema->getName());
+            if ($this->validateChildSchemas($content, $contentSchema)) {
+                $this->validateSchemas($content, ...array_values($contentSchema->getChildSchemas()));
+            } else {
+                $this->logger->debug("validate, ".$contentSchema->getName().", type: ".$contentSchema->getType(), ["content" => $content]);
+                if ($contentSchema->isMultipleType()) {
+                    $contentSchema                  = $this->getSchemaFromMultiple($content, $contentSchema);
+                }
+                $content                            = $this->getEncodeValue($content, $contentSchema);
+                $this->validateContentType($content, $contentSchema->isNullable(), $contentSchema->getType());
+                if (is_array($content)) {
+                    $this->validateArray($content, $contentSchema->getMinItems(), $contentSchema->getMaxItems());
+                }
+                $this->validateString($content, $contentSchema->getMinLength(), $contentSchema->getMaxLength(), $contentSchema->getPatterns());
+                $this->validateNumber($content, $contentSchema->getMinRange(), $contentSchema->getMaxRange(), $contentSchema->getMultipleOf());
+                if ($contentSchema->getFormat()) {
+                    $this->validateFormat($content, $contentSchema->getFormat());
+                }
+                if ($contentSchema->hasEnum()) {
+                    $this->validateEnum($content, $contentSchema->getEnum());
+                }
+                $this->popPropertyName();
+            }
+        } catch (InvalidObjectValueArgumentException $exception) {
+            $propertyName                           = $this->getPropertyName();
+            $this->resetPropertyName();
+            throw new InvalidObjectValueArgumentException("$propertyName invalid: ".$exception->getMessage());
+        }
     }
 
     /**
      * @param $content
-     * @param ObjectValueSchema ...$contentSchema
-     * @throws InvalidObjectValueArgumentException
+     * @param ObjectValueSchema $contentSchema
+     * @return bool
      */
-    public function validate($content, ObjectValueSchema ...$contentSchema) : void {
-        $useSchema                                  = null;
-        $useSchemas                                 = null;
-        if (count($contentSchema) === 1) {
-            $useSchema                              = array_shift($contentSchema);
-            if ($useSchema->hasChildSchemas() && !$useSchema->isMultipleType()) {
-                $useSchemas                         = $useSchema->getChildSchemas();
-                $this->propertyPrefix               = $useSchema->getName();
-                $useSchema                          = null;
+    private function validateChildSchemas($content, ObjectValueSchema $contentSchema) : bool {
+        if ($contentSchema->hasChildSchemas()) {
+            if (is_array($content)) {
+                $this->logger->debug("is associative ".($this->isAssociative($content) ? "yes" : "no"), $content);
+                if (!$this->isAssociative($content)) {
+                    throw new InvalidObjectValueArgumentException(self::valueExceptionNonAssociative);
+                }
+                if ($contentSchema->getType() === "object") {
+                    $contentSchema->setType("array");
+                }
+                return true;
+            } elseif (is_object($content)) {
+                return true;
             }
-        } else {
-            $useSchemas                             = $contentSchema;
         }
-        if ($useSchema) {
-            $schema                                 = clone $useSchema;
-            $this->validateSchema($content, $schema);
-        } elseif ($useSchemas) {
-            $this->validateSchemas($content, $useSchemas);
+        return false;
+    }
+
+
+    /**
+     * @param $content
+     * @param ObjectValueSchema ...$contentSchemas
+     * @return void
+     */
+    private function validateSchemas($content, ObjectValueSchema ...$contentSchemas) : void {
+        $content                                    = (array)$content;
+        foreach ($contentSchemas as $contentSchema) {
+            $inputSchema                            = clone $contentSchema;
+            $propertyName                           = $inputSchema->getName();
+            $this->logger->debug("validate property $propertyName, type: ".$inputSchema->getType());
+            $inputExists                            = array_key_exists($propertyName, $content);
+            $this->logger->debug("property $propertyName ".($inputExists ? "exists" : "does not exists")." in content");
+            if ($inputSchema->isRequired() && !$inputExists) {
+                $this->pushPropertyName($propertyName);
+                throw new InvalidObjectValueArgumentException($this->getPropertyName()." required, missing");
+            }
+            if ($inputExists) {
+                $inputValue                         = $content[$propertyName];
+                $this->validate($inputValue, $inputSchema);
+                unset($content[$propertyName]);
+            }
+        }
+        $unmappedKeys                               = [];
+        foreach ($content as $cKey => $cValue) {
+            $this->pushPropertyName($cKey);
+            $unmappedKeys[]                         = $this->getPropertyName();
+            $this->popPropertyName();
+        }
+        if (count($unmappedKeys)) {
+            throw new InvalidObjectValueArgumentException("(".join(", ", $unmappedKeys).") not allowed");
         }
     }
 
@@ -80,15 +146,17 @@ class ObjectValueValidator implements ObjectValueValidatorInterface {
         }
         if ($expectedType === "number") {
             if ($inputType === "integer" || $inputType === "double") {
+                $this->logger->debug("expected number, type of input $inputType, setType=$inputType");
                 $schema->setType($inputType);
                 return $content;
             }
             if ($inputType === "string" && strval(intval($content)) === $content) {
+                $this->logger->debug("expected number, type of input $inputType, but numeric content, setType=integer");
                 $schema->setType("integer");
                 return intval($content);
             }
         }
-        if ($expectedType === "boolean") {
+        elseif ($expectedType === "boolean") {
             if ($inputType === "string") {
                 if (in_array(strtolower($content), self::boolean_true, true)) {
                     return true;
@@ -110,33 +178,42 @@ class ObjectValueValidator implements ObjectValueValidatorInterface {
     }
 
     /**
-     * @param $content
-     * @param ObjectValueSchema $contentSchema
-     * @throws InvalidObjectValueArgumentException
+     * @param array $input
+     * @return bool
      */
-    private function validateSchema($content, ObjectValueSchema $contentSchema) : void {
-        try {
-            $this->pushPropertyName($contentSchema->getName());
-            if ($contentSchema->isMultipleType()) {
-                $contentSchema                      = $this->getSchemaFromMultiple($content, $contentSchema);
-            }
-            $content                                = $this->getEncodeValue($content, $contentSchema);
-            $this->validateContentType($content, $contentSchema->isNullable(), $contentSchema->getType());
-            if (is_array($content)) {
-                $this->validateArray($content, $contentSchema->getMinItems(), $contentSchema->getMaxItems());
-            }
-            $this->validateString($content, $contentSchema->getMinLength(), $contentSchema->getMaxLength(), $contentSchema->getPatterns());
-            $this->validateNumber($content, $contentSchema->getMinRange(), $contentSchema->getMaxRange(), $contentSchema->getMultipleOf());
-            if ($contentSchema->getFormat()) {
-                $this->validateFormat($content, $contentSchema->getFormat());
-            }
-            if ($contentSchema->hasEnum()) {
-                $this->validateEnum($content, $contentSchema->getEnum());
-            }
-            $this->popPropertyName();
-        } catch (InvalidObjectValueArgumentException $exception) {
-            throw new InvalidObjectValueArgumentException($this->getFullPropertyName()." invalid: ".$exception->getMessage());
+    private function isAssociative(array $input) : bool {
+        if ([] === $input) {
+            return true;
         }
+        $cElements 									= count($input);
+        for ($iElement = 0; $iElement < $cElements; $iElement++) {
+            if(!array_key_exists($iElement, $input)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param string $propertyName
+     */
+    private function pushPropertyName(string $propertyName) : void {
+        $this->propertyName[]                       = $propertyName;
+    }
+
+    private function popPropertyName() : void {
+        array_pop($this->propertyName);
+    }
+
+    private function resetPropertyName() : void {
+        $this->propertyName                         = [];
+    }
+
+    /**
+     * @return string
+     */
+    private function getPropertyName() : string {
+        return join(".", $this->propertyName);
     }
 
     private function getSchemaFromMultiple($content, ObjectValueSchema $contentSchema) : ObjectValueSchema {
@@ -149,41 +226,9 @@ class ObjectValueValidator implements ObjectValueValidatorInterface {
                     }
                 }
             }
-            throw new InvalidObjectValueArgumentException("does not match any childSchema");
+            throw new InvalidObjectValueArgumentException(self::valueExceptionNoMatchMultiple);
         } else {
-            throw new InvalidObjectSchemaException($this->getFullPropertyName()." invalid: no childSchema given");
-        }
-    }
-
-    /**
-     * @param $content
-     * @param array|ObjectValueSchema[] $contentSchema
-     * @return void
-     */
-    private function validateSchemas($content, array $contentSchema) : void {
-        $content                                    = (array)$content;
-        foreach ($contentSchema as $inputSchema) {
-            $propertyName                           = $inputSchema->getName();
-            $inputExists                            = array_key_exists($propertyName, $content);
-            if ($inputSchema->isRequired() && !$inputExists) {
-                $this->pushPropertyName($propertyName);
-                throw new InvalidObjectValueArgumentException($this->getFullPropertyName()." required, missing");
-            }
-            if ($inputExists) {
-                $inputValue                         = $content[$propertyName];
-                $this->validateSchema($inputValue, $inputSchema);
-                unset($content[$propertyName]);
-            }
-        }
-        $unmappedKeys                               = [];
-        foreach ($content as $cKey => $cValue) {
-            $this->pushPropertyName($cKey);
-            $unmappedKeys[]                         = $this->getPropertyName();
-            $this->popPropertyName();
-        }
-        if (count($unmappedKeys)) {
-            $arguments                              = $this->propertyPrefix.(count($unmappedKeys) > 1 ? "s" : "");
-            throw new InvalidObjectValueArgumentException("$arguments (".join(", ", $unmappedKeys).") not allowed");
+            throw new InvalidObjectSchemaException(self::objectExceptionNoChildSchemasTypeMultiple);
         }
     }
 
