@@ -17,7 +17,7 @@ class ObjectValueValidatorSchemasTest extends TestCase {
     }
 
     function testIsValidSchemas() {
-        $validator                      = $this->getValidator(false);
+        $validator                      = $this->getValidator(true);
         $validateSchemaString           = (new ObjectValueSchema("s", "string"))
             ->setMinLength(10)
             ->setMaxLength(12)
@@ -31,22 +31,27 @@ class ObjectValueValidatorSchemasTest extends TestCase {
         $this->assertEquals([
             true, // passed as array, required object
             true, // passed as object, required object
-            true, // passed as array, required array
-            true, // passed as object, required array
+            true, // passed as object, required array (switch type to object)
 
             false,
             false,
             false, // invalid argument a
             true,
+
+            false, // object | array required
+            false, // object | array required
         ],[
             $validator->isValid(["s" => "111-22-4444", "i" => 4], (new ObjectValueSchema("isValidSchemas", "object"))->setChildSchemas($validateSchemaString, $validateSchemaInteger)),
-            $validator->isValid((object)["s" => "111-22-4444", "i" => 4], (new ObjectValueSchema("isValidSchemas", "object"))->setChildSchemas($validateSchemaString, $validateSchemaInteger)),
             $validator->isValid(["s" => "111-22-4444", "i" => 4], (new ObjectValueSchema("isValidSchemas", "array"))->setChildSchemas($validateSchemaString, $validateSchemaInteger)),
-            $validator->isValid((object)["s" => "111-22-4444", "i" => 4], (new ObjectValueSchema("isValidSchemas", "array"))->setChildSchemas($validateSchemaString, $validateSchemaInteger)),
-            $validator->isValid(["s" => "111-22-a444", "i" => 4], (new ObjectValueSchema("isValidSchemas", "object"))->setChildSchemas($validateSchemaString, $validateSchemaInteger)),
-            $validator->isValid(["s" => "111-22-4444", "i" => "a"], (new ObjectValueSchema("isValidSchemas", "object"))->setChildSchemas($validateSchemaString, $validateSchemaInteger)),
-            $validator->isValid(["a" => "111-22-4444"], (new ObjectValueSchema("isValidSchemas", "object"))->setChildSchemas($validateSchemaString, $validateSchemaInteger)),
-            $validator->isValid([], (new ObjectValueSchema("isValidSchemas", "object"))->setChildSchemas($validateSchemaString, $validateSchemaInteger)),
+            $validator->isValid((object)["s" => "111-22-4444", "i" => 4], (new ObjectValueSchema("isValidSchemas", "object"))->setChildSchemas($validateSchemaString, $validateSchemaInteger)),
+
+            $validator->isValid((object)["s" => "111-22-a444", "i" => 4], (new ObjectValueSchema("isValidSchemas", "object"))->setChildSchemas($validateSchemaString, $validateSchemaInteger)),
+            $validator->isValid((object)["s" => "111-22-4444", "i" => "a"], (new ObjectValueSchema("isValidSchemas", "object"))->setChildSchemas($validateSchemaString, $validateSchemaInteger)),
+            $validator->isValid((object)["a" => "111-22-4444"], (new ObjectValueSchema("isValidSchemas", "object"))->setChildSchemas($validateSchemaString, $validateSchemaInteger)),
+            $validator->isValid((object)[], (new ObjectValueSchema("isValidSchemas", "object"))->setChildSchemas($validateSchemaString, $validateSchemaInteger)),
+
+            $validator->isValid(12, (new ObjectValueSchema("isValidSchemas", "object"))->setChildSchemas($validateSchemaString, $validateSchemaInteger)),
+            $validator->isValid(12, (new ObjectValueSchema("isValidSchemas", "array"))->setChildSchemas($validateSchemaString, $validateSchemaInteger)),
         ]);
     }
 
@@ -60,11 +65,26 @@ class ObjectValueValidatorSchemasTest extends TestCase {
         $validator->validate("a", $validateSchemaInteger);
     }
 
-    function testNonAssociativeContentFailure() {
+    function testNonAssociativeContent() {
         $validateSchemaInteger          = (new ObjectValueSchema("i", "integer"));
         $validator                      = $this->getValidator(false);
-        $this->expectException(InvalidArgumentException::class);
-        $validator->validate([12], (new ObjectValueSchema("associativeContentFailure", "object"))->setChildSchemas($validateSchemaInteger));
+        $this->assertEquals([
+            false,
+        ], [
+            $validator->isValid([12], (new ObjectValueSchema("associativeContentFailure", "object"))->setChildSchemas($validateSchemaInteger))
+        ]);
+    }
+
+    function testAssociativeContent() {
+        $validateSchemaInteger          = (new ObjectValueSchema("i", "integer"));
+        $validator                      = $this->getValidator(false);
+        $this->assertEquals([
+            true,
+            false
+        ],[
+            $validator->isValid([12], (new ObjectValueSchema("associativeContentFailure", "array"))->setChildSchemas($validateSchemaInteger)),
+            $validator->isValid(["12"], (new ObjectValueSchema("associativeContentFailure", "array"))->setChildSchemas($validateSchemaInteger))
+        ]);
     }
 
     function testMultipleNoChildFailure() {

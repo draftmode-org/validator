@@ -43,28 +43,12 @@ class ObjectValueValidator implements ObjectValueValidatorInterface {
     public function validate($content, ObjectValueSchema $contentSchema) : void {
         try {
             $this->pushPropertyName($contentSchema->getName());
-            if ($this->validateChildSchemas($content, $contentSchema)) {
-                $this->validateSchemas($content, ...array_values($contentSchema->getChildSchemas()));
+            if ($this->handleMultipleContent($content, $contentSchema)) {
+                $this->validateMultipleContent($content, $contentSchema);
             } else {
-                $this->logger->debug("validate, ".$contentSchema->getName().", type: ".$contentSchema->getType(), ["content" => $content]);
-                if ($contentSchema->isMultipleType()) {
-                    $contentSchema                  = $this->getSchemaFromMultiple($content, $contentSchema);
-                }
-                $content                            = $this->getEncodeValue($content, $contentSchema);
-                $this->validateContentType($content, $contentSchema->isNullable(), $contentSchema->getType());
-                if (is_array($content)) {
-                    $this->validateArray($content, $contentSchema->getMinItems(), $contentSchema->getMaxItems());
-                }
-                $this->validateString($content, $contentSchema->getMinLength(), $contentSchema->getMaxLength(), $contentSchema->getPatterns());
-                $this->validateNumber($content, $contentSchema->getMinRange(), $contentSchema->getMaxRange(), $contentSchema->getMultipleOf());
-                if ($contentSchema->getFormat()) {
-                    $this->validateFormat($content, $contentSchema->getFormat());
-                }
-                if ($contentSchema->hasEnum()) {
-                    $this->validateEnum($content, $contentSchema->getEnum());
-                }
-                $this->popPropertyName();
+                $this->validateSingleContent($content, $contentSchema);
             }
+            $this->popPropertyName();
         } catch (InvalidObjectValueArgumentException $exception) {
             $propertyName                           = $this->getPropertyName();
             $this->resetPropertyName();
@@ -75,24 +59,97 @@ class ObjectValueValidator implements ObjectValueValidatorInterface {
     /**
      * @param $content
      * @param ObjectValueSchema $contentSchema
+     */
+    private function validateSingleContent($content, ObjectValueSchema $contentSchema) {
+        $this->logger->debug("validateSingleValue, ".$contentSchema->getName().", type: ".$contentSchema->getType(), ["content" => $content]);
+        if ($contentSchema->isMultipleType()) {
+            $contentSchema                  = $this->getSchemaFromMultiple($content, $contentSchema);
+        }
+        $content                            = $this->getEncodeValue($content, $contentSchema);
+        $this->validateContentType($content, $contentSchema->isNullable(), $contentSchema->getType());
+        if (is_array($content)) {
+            $this->validateArray($content, $contentSchema->getMinItems(), $contentSchema->getMaxItems());
+        }
+        $this->validateString($content, $contentSchema->getMinLength(), $contentSchema->getMaxLength(), $contentSchema->getPatterns());
+        $this->validateNumber($content, $contentSchema->getMinRange(), $contentSchema->getMaxRange(), $contentSchema->getMultipleOf());
+        if ($contentSchema->getFormat()) {
+            $this->validateFormat($content, $contentSchema->getFormat());
+        }
+        if ($contentSchema->hasEnum()) {
+            $this->validateEnum($content, $contentSchema->getEnum());
+        }
+    }
+
+    /**
+     * @param $content
+     * @param ObjectValueSchema $contentSchema
      * @return bool
      */
-    private function validateChildSchemas($content, ObjectValueSchema $contentSchema) : bool {
+    private function handleMultipleContent($content, ObjectValueSchema $contentSchema): bool {
         if ($contentSchema->hasChildSchemas()) {
-            if (is_array($content)) {
-                $this->logger->debug("is associative ".($this->isAssociative($content) ? "yes" : "no"), $content);
-                if (!$this->isAssociative($content)) {
-                    throw new InvalidObjectValueArgumentException(self::valueExceptionNonAssociative);
+            if (in_array($contentSchema->getType(), ["object", "array"])) {
+                if (is_array($content)) {
+                    return true;
+                } elseif (is_object($content)) {
+                    return true;
+                } else {
+                    throw new InvalidObjectValueArgumentException("expected ".$contentSchema->getType().", given ".gettype($content));
                 }
-                if ($contentSchema->getType() === "object") {
-                    $contentSchema->setType("array");
-                }
-                return true;
-            } elseif (is_object($content)) {
-                return true;
             }
         }
         return false;
+    }
+
+    /**
+     * @param $content
+     * @param ObjectValueSchema $contentSchema
+     * @return void
+     */
+    private function validateMultipleContent($content, ObjectValueSchema $contentSchema) : void {
+        $this->logger->debug("validateMultipleContent, schema.type: ".$contentSchema->getType().", content.type ".gettype($content));
+        $validateChildSchemas                       = false;
+        if (is_array($content)) {
+            $isAssociative                          = $this->isAssociative($content);
+            if ($contentSchema->getType() === "array") {
+                if ($isAssociative) {
+                    $this->logger->debug("given associative array, switch to object, continue with validateSchemas");
+                    $contentSchema->setType("object");
+                    $validateChildSchemas           = true;
+                } else {
+                    $childSchemas                   = $contentSchema->getChildSchemas();
+                    if (count($childSchemas) === 1) {
+                        $this->logger->debug("given non associative array, use first childSchema");
+                        $childSchema                = array_shift($childSchemas);
+                        foreach ($content as $iChildCounter => $childValue) {
+                            $this->pushPropertyName("[$iChildCounter]");
+                            $this->validateSingleContent($childValue, $childSchema);
+                            $this->popPropertyName();
+                        }
+                        return;
+                    } else {
+                        throw new InvalidObjectValueArgumentException("multiple childSchemas for non associative arrays are not possible");
+                    }
+                }
+            } elseif ($contentSchema->getType() === "object") {
+                if ($isAssociative) {
+                    $this->logger->debug("given associative array, continue with validateSchemas");
+                    $validateChildSchemas           = true;
+                } else {
+                    throw new InvalidObjectValueArgumentException("expected type object, given non associative array");
+                }
+            } else {
+                throw new InvalidObjectValueArgumentException("expected type object, given non associative array");
+            }
+        }
+        elseif (is_object($content)) {
+            if ($contentSchema->getType() === "object") {
+                $this->logger->debug("expected object, given object, validate content for childSchemas");
+                $validateChildSchemas               = true;
+            }
+        }
+        if ($validateChildSchemas) {
+            $this->validateSchemas($content, ...array_values($contentSchema->getChildSchemas()));
+        }
     }
 
 
@@ -102,6 +159,7 @@ class ObjectValueValidator implements ObjectValueValidatorInterface {
      * @return void
      */
     private function validateSchemas($content, ObjectValueSchema ...$contentSchemas) : void {
+        $this->logger->debug("validateSchemas", ["content" => $content]);
         $content                                    = (array)$content;
         foreach ($contentSchemas as $contentSchema) {
             $inputSchema                            = clone $contentSchema;
