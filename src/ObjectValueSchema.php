@@ -66,7 +66,7 @@ class ObjectValueSchema {
         $this->type                                 = $type;
         return $this;
     }
-    public function getType() :?string {
+    public function getType() : string {
         return $this->type;
     }
     public function isMultipleType() : bool {
@@ -82,7 +82,7 @@ class ObjectValueSchema {
         return $this;
     }
     public function hasChildSchemas() : bool {
-        return $this->childSchemas && count($this->childSchemas);
+        return (is_array($this->childSchemas) && count($this->childSchemas));
     }
     /**
      * @return ObjectValueSchema[]|null
@@ -167,7 +167,7 @@ class ObjectValueSchema {
         return $this;
     }
     public function hasEnum() : bool {
-        return $this->enum ? count($this->enum) : false;
+        return (is_array($this->enum) && count($this->enum));
     }
     public function getEnum() : ?array {
         return $this->enum;

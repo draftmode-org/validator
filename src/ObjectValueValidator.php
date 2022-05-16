@@ -20,7 +20,7 @@ class ObjectValueValidator implements ObjectValueValidatorInterface {
     }
 
     /**
-     * @param $content
+     * @param mixed|null $content
      * @param ObjectValueSchema $contentSchema
      * @return bool
      */
@@ -36,7 +36,7 @@ class ObjectValueValidator implements ObjectValueValidatorInterface {
     }
 
     /**
-     * @param $content
+     * @param mixed|null $content
      * @param ObjectValueSchema $contentSchema
      * @throws InvalidObjectValueArgumentException
      */
@@ -57,10 +57,10 @@ class ObjectValueValidator implements ObjectValueValidatorInterface {
     }
 
     /**
-     * @param $content
+     * @param mixed|null $content
      * @param ObjectValueSchema $contentSchema
      */
-    private function validateSingleContent($content, ObjectValueSchema $contentSchema) {
+    private function validateSingleContent($content, ObjectValueSchema $contentSchema) : void {
         $this->logger->debug("validateSingleValue, ".$contentSchema->getName().", type: ".$contentSchema->getType(), ["content" => $content]);
         if ($contentSchema->isMultipleType()) {
             $contentSchema                  = $this->getSchemaFromMultiple($content, $contentSchema);
@@ -81,7 +81,7 @@ class ObjectValueValidator implements ObjectValueValidatorInterface {
     }
 
     /**
-     * @param $content
+     * @param mixed|null $content
      * @param ObjectValueSchema $contentSchema
      * @return bool
      */
@@ -101,7 +101,7 @@ class ObjectValueValidator implements ObjectValueValidatorInterface {
     }
 
     /**
-     * @param $content
+     * @param mixed|null $content
      * @param ObjectValueSchema $contentSchema
      * @return void
      */
@@ -116,7 +116,7 @@ class ObjectValueValidator implements ObjectValueValidatorInterface {
                     $contentSchema->setType("object");
                     $validateChildSchemas           = true;
                 } else {
-                    $childSchemas                   = $contentSchema->getChildSchemas();
+                    $childSchemas                   = $contentSchema->getChildSchemas() ?? [];
                     if (count($childSchemas) === 1) {
                         $this->logger->debug("given non associative array, use first childSchema");
                         $childSchema                = array_shift($childSchemas);
@@ -148,13 +148,13 @@ class ObjectValueValidator implements ObjectValueValidatorInterface {
             }
         }
         if ($validateChildSchemas) {
-            $this->validateSchemas($content, ...array_values($contentSchema->getChildSchemas()));
+            $this->validateSchemas($content, ...array_values($contentSchema->getChildSchemas() ?? []));
         }
     }
 
 
     /**
-     * @param $content
+     * @param mixed|null $content
      * @param ObjectValueSchema ...$contentSchemas
      * @return void
      */
@@ -189,9 +189,9 @@ class ObjectValueValidator implements ObjectValueValidatorInterface {
     }
 
     /**
-     * @param $content
+     * @param mixed|null $content
      * @param ObjectValueSchema $schema
-     * @return mixed
+     * @return mixed|null
      */
     public function getEncodeValue($content, ObjectValueSchema $schema) {
         if (is_null($content)) {
@@ -274,9 +274,14 @@ class ObjectValueValidator implements ObjectValueValidatorInterface {
         return join(".", $this->propertyName);
     }
 
+    /**
+     * @param mixed|null $content
+     * @param ObjectValueSchema $contentSchema
+     * @return ObjectValueSchema
+     */
     private function getSchemaFromMultiple($content, ObjectValueSchema $contentSchema) : ObjectValueSchema {
         if ($contentSchema->hasChildSchemas()) {
-            foreach ($contentSchema->getChildSchemas() as $schema) {
+            foreach ($contentSchema->getChildSchemas() ?? [] as $schema) {
                 if ($this->isValid($content, $schema)) {
                     switch ($contentSchema->getType()) {
                         case "oneOf":
@@ -291,7 +296,7 @@ class ObjectValueValidator implements ObjectValueValidatorInterface {
     }
 
     /**
-     * @param $content
+     * @param mixed|null $content
      * @param bool $nullable
      * @param string $expectedType
      * @throws InvalidObjectValueArgumentException
@@ -310,13 +315,13 @@ class ObjectValueValidator implements ObjectValueValidatorInterface {
     }
 
     /**
-     * @param $content
+     * @param mixed|null $content
      * @param int|null $minLength
      * @param int|null $maxLength
      * @param string|null $pattern
      */
     private function validateString($content, ?int $minLength, ?int $maxLength, ?string $pattern) : void {
-        if (!is_scalar($content)) return;
+        if (!is_string($content)) return;
         if ($minLength && strlen($content) < $minLength) {
             throw new InvalidObjectValueArgumentException("min length $minLength expected, given length ".strlen($content));
         }
@@ -331,11 +336,12 @@ class ObjectValueValidator implements ObjectValueValidatorInterface {
     }
 
     /**
-     * @param $content
-     * @param string $format
+     * @param string|null $content
+     * @param string|null $format
      */
-    private function validateFormat($content, string $format): void {
-        if (!is_scalar($content)) return;
+    private function validateFormat(?string $content=null, ?string $format=null): void {
+        if (is_null($format)) return;
+        if (is_null($content)) return;
         switch ($format) {
             case "date":
                 $dFormat                            = "Y-m-d";
@@ -353,10 +359,11 @@ class ObjectValueValidator implements ObjectValueValidatorInterface {
     }
 
     /**
-     * @param $content
-     * @param array $enum
+     * @param mixed|null $content
+     * @param array|null $enum
      */
-    private function validateEnum($content, array $enum) : void {
+    private function validateEnum($content, ?array $enum=null) : void {
+        if (is_null($enum)) return;
         if (!is_scalar($content)) return;
         foreach ($enum as $enumValue) {
             if ($content === $enumValue) return;
@@ -379,12 +386,12 @@ class ObjectValueValidator implements ObjectValueValidatorInterface {
     }
 
     /**
-     * @param $content
+     * @param mixed|null $content
      * @param float|null $minRange
      * @param float|null $maxRange
-     * @param int|null $multipleOf
+     * @param float|null $multipleOf
      */
-    private function validateNumber($content, ?float $minRange, ?float $maxRange, ?int $multipleOf) : void {
+    private function validateNumber($content, ?float $minRange, ?float $maxRange, ?float $multipleOf) : void {
         if (!is_numeric($content)) return;
         if ($minRange && $content < $minRange) {
             throw new InvalidObjectValueArgumentException("min range $minRange expected, given ".$content);

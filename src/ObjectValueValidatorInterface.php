@@ -4,21 +4,21 @@ use Terrazza\Component\Validator\Exception\InvalidObjectValueArgumentException;
 
 interface ObjectValueValidatorInterface {
     /**
-     * @param $content
+     * @param mixed|null $content
      * @param ObjectValueSchema $contentSchema
      * @return bool
      */
     public function isValid($content, ObjectValueSchema $contentSchema) : bool;
 
     /**
-     * @param $content
+     * @param mixed|null $content
      * @param ObjectValueSchema $contentSchema
      * @throws InvalidObjectValueArgumentException
      */
     public function validate($content, ObjectValueSchema $contentSchema) : void;
 
     /**
-     * @param $content
+     * @param mixed|null $content
      * @param ObjectValueSchema $schema
      * @return mixed
      */

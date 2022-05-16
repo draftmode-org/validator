@@ -17,7 +17,7 @@ class ObjectValueValidatorSchemasTest extends TestCase {
     }
 
     function testIsValidSchemas() {
-        $validator                      = $this->getValidator(true);
+        $validator                      = $this->getValidator(false);
         $validateSchemaString           = (new ObjectValueSchema("s", "string"))
             ->setMinLength(10)
             ->setMaxLength(12)
