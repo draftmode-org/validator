@@ -25,7 +25,7 @@ class ObjectValueValidator implements ObjectValueValidatorInterface {
      * @return bool
      */
     public function isValid($content, ObjectValueSchema $contentSchema) : bool {
-        $this->resetPropertyName();
+        //$this->resetPropertyName();
         try {
             $this->validate($content, clone $contentSchema);
             return true;
@@ -51,7 +51,7 @@ class ObjectValueValidator implements ObjectValueValidatorInterface {
             $this->popPropertyName();
         } catch (InvalidObjectValueArgumentException $exception) {
             $propertyName                           = $this->getPropertyName();
-            $this->resetPropertyName();
+            $this->popPropertyName();
             throw new InvalidObjectValueArgumentException("$propertyName invalid: ".$exception->getMessage());
         }
     }
