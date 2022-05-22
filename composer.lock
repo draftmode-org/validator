@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "387a4083a531d58d0477846a6f0f9574",
+    "content-hash": "195488c19870831676088a4d28cf8048",
     "packages": [
         {
             "name": "psr/log",
@@ -3568,23 +3568,22 @@
         },
         {
             "name": "terrazza/dev-logger",
-            "version": "dev-main",
+            "version": "1.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/terrazza/dev-logger.git",
-                "reference": "3a0a23d63d4ca50c1f229b09072938e5e4a3f674"
+                "reference": "99c0756a8cbf6f2fe0cb022934e993f85b5f9704"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/terrazza/dev-logger/zipball/3a0a23d63d4ca50c1f229b09072938e5e4a3f674",
-                "reference": "3a0a23d63d4ca50c1f229b09072938e5e4a3f674",
+                "url": "https://api.github.com/repos/terrazza/dev-logger/zipball/99c0756a8cbf6f2fe0cb022934e993f85b5f9704",
+                "reference": "99c0756a8cbf6f2fe0cb022934e993f85b5f9704",
                 "shasum": ""
             },
             "require": {
                 "php": ">=7.4",
-                "terrazza/logger": "dev-main"
+                "terrazza/logger": "1.*.*"
             },
-            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -3604,22 +3603,22 @@
             "description": "logger",
             "support": {
                 "issues": "https://github.com/terrazza/dev-logger/issues",
-                "source": "https://github.com/terrazza/dev-logger/tree/main"
+                "source": "https://github.com/terrazza/dev-logger/tree/v1.0.0"
             },
-            "time": "2022-05-09T22:27:39+00:00"
+            "time": "2022-05-22T21:58:12+00:00"
         },
         {
             "name": "terrazza/logger",
-            "version": "dev-main",
+            "version": "1.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/terrazza/logger.git",
-                "reference": "0aa201948c78dd15814b2d94efd3d157c21bc6aa"
+                "reference": "6a2c9f3d0128aecfa7e60e1e3113c1db9c08a3c2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/terrazza/logger/zipball/0aa201948c78dd15814b2d94efd3d157c21bc6aa",
-                "reference": "0aa201948c78dd15814b2d94efd3d157c21bc6aa",
+                "url": "https://api.github.com/repos/terrazza/logger/zipball/6a2c9f3d0128aecfa7e60e1e3113c1db9c08a3c2",
+                "reference": "6a2c9f3d0128aecfa7e60e1e3113c1db9c08a3c2",
                 "shasum": ""
             },
             "require": {
@@ -3627,9 +3626,9 @@
                 "psr/log": "1.1.*"
             },
             "require-dev": {
-                "phpunit/phpunit": "^9.3"
+                "phpunit/phpunit": "^9.3",
+                "vimeo/psalm": "4.x-dev"
             },
-            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -3650,9 +3649,9 @@
             "description": "logger",
             "support": {
                 "issues": "https://github.com/terrazza/logger/issues",
-                "source": "https://github.com/terrazza/logger/tree/main"
+                "source": "https://github.com/terrazza/logger/tree/v1.0.0"
             },
-            "time": "2022-05-09T21:03:17+00:00"
+            "time": "2022-05-22T21:54:28+00:00"
         },
         {
             "name": "theseer/tokenizer",
@@ -3710,12 +3709,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/vimeo/psalm.git",
-                "reference": "3929d731ad2c8ee8081954deb6ed3f133175dbbf"
+                "reference": "50fb396bbb368b895c76c9306c8e3f5d8f061694"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/vimeo/psalm/zipball/3929d731ad2c8ee8081954deb6ed3f133175dbbf",
-                "reference": "3929d731ad2c8ee8081954deb6ed3f133175dbbf",
+                "url": "https://api.github.com/repos/vimeo/psalm/zipball/50fb396bbb368b895c76c9306c8e3f5d8f061694",
+                "reference": "50fb396bbb368b895c76c9306c8e3f5d8f061694",
                 "shasum": ""
             },
             "require": {
@@ -3810,7 +3809,7 @@
                 "issues": "https://github.com/vimeo/psalm/issues",
                 "source": "https://github.com/vimeo/psalm/tree/4.x"
             },
-            "time": "2022-05-14T08:25:13+00:00"
+            "time": "2022-05-20T18:43:44+00:00"
         },
         {
             "name": "webmozart/assert",
@@ -3927,8 +3926,7 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "vimeo/psalm": 20,
-        "terrazza/dev-logger": 20
+        "vimeo/psalm": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,
